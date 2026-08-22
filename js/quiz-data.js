@@ -189,7 +189,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ca-03',
         category: 'camera_angle',
         title: 'มุมกล้องที่วางอยู่ในระนาบเดียวกับสายตา ให้ความรู้สึกเป็นกลาง สมจริง และเป็นธรรมชาติ คือมุมใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/15l4jn7jZlrknVm0z95PJ5fWk7nGSO_qf/view?usp=sharing',
         options: [
             'Eye Level (มุมระดับสายตา)',
             'High Angle (มุมสูง)',
@@ -204,7 +204,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ca-04',
         category: 'camera_angle',
         title: 'กล้องอยู่ต่ำกว่าระดับสายตาแล้ว "แหงนหน้ากล้องขึ้น" เพื่อทำให้ตัวละครดูยิ่งใหญ่ มีอำนาจ น่าเกรงขาม คือมุมกล้องใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1UqdySJoX7ED82uPozgYeYd6Vcn8C9kCi/view?usp=sharing',
         options: [
             'High Angle (มุมสูง)',
             'Low Angle (มุมต่ำ)',
@@ -234,7 +234,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ca-06',
         category: 'camera_angle',
         title: 'การเอียงแกนกล้องเฉียง (Canted / Oblique) เพื่อสื่อถึงความตึงเครียด ไม่มั่นคง จิตใจปั่นป่วน คือมุมกล้องใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/11NQjjvpqpvXK-99ZYegwDrT9cUMz3o7d/view?usp=sharing',
         options: [
             'Dutch Angle (Canted Angle / มุมเอียง)',
             'Eye Level (มุมระดับสายตา)',
@@ -249,7 +249,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ca-07',
         category: 'camera_angle',
         title: 'มุมกล้องที่ถ่ายจากด้านหลังโดยมี "หัวไหล่หรือศีรษะ" ของตัวละครหนึ่งบังอยู่ในเฟรมเพื่อคุยกับอีกคน คือมุมใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1KqtXCzPdkBM8NERrIatIulekEzZUhNcO/view?usp=sharing',
         options: [
             'Over the Shoulder (OTS / มุมมองข้ามไหล่)',
             'Point of View (POV)',
@@ -279,7 +279,7 @@ const DEFAULT_QUESTIONS = [
 
 class QuizDataManager {
     constructor() {
-        this.storageKey = 'dbt_quiz_questions_v3';
+        this.storageKey = 'dbt_quiz_questions_v4';
         this.resultsKey = 'dbt_quiz_results_v1';
     }
 
