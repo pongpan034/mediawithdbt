@@ -2,6 +2,8 @@
 ### รายวิชา: สื่อสร้างสรรค์ธุรกิจดิจิทัล (Creative Digital Business Media)
 **หัวข้อ:** ขนาดภาพ (Shot Sizes) และ มุมกล้อง (Camera Angles) ด้วยการเรียนรู้ผ่านภาพจริง (Visual Learning)
 
+🌐 **ลิงก์เข้าใช้งานจริง (Live Demo):** [https://mediawithdbt-9vq4.vercel.app/](https://mediawithdbt-9vq4.vercel.app/)
+
 ---
 
 ## 🌟 ฟีเจอร์เด่นของระบบ (Key Features)
