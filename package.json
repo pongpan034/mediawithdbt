@@ -1,0 +1,20 @@
+{
+  "name": "mediawithdbt-quiz-show",
+  "version": "1.0.0",
+  "description": "DBT Quiz Show - มินิเกมตอบคำถามจับเวลาท้ายคาบ สื่อสร้างสรรค์ธุรกิจดิจิทัล เรื่องขนาดภาพและมุมกล้อง",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "quiz",
+    "dbt",
+    "shot-sizes",
+    "camera-angles",
+    "cinematography",
+    "visual-learning",
+    "education"
+  ],
+  "author": "Creative Digital Business Media",
+  "license": "MIT"
+}

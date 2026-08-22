@@ -1,0 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Prompt:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Sarabun:wght@300;400;600;700&display=swap');
+
+:root {
+    --bg-main: #0a0b12;
+    --bg-card: rgba(18, 20, 38, 0.85);
+    --border-card: rgba(139, 92, 246, 0.25);
+    --accent-glow: rgba(168, 85, 247, 0.4);
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: #e2e8f0;
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.08) 0px, transparent 60%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+}
+
+/* Typography Enhancements */
+.font-mono {
+    font-family: 'Outfit', monospace;
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-card);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-glow {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Animations */
+@keyframes subtle-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.animate-subtle-pulse {
+    animation: subtle-pulse 3s infinite ease-in-out;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f111a;
+}
+::-webkit-scrollbar-thumb {
+    background: #2d3748;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #4a5568;
+}
+
+/* ===================================================
+   PRINT STYLESHEET (A4 FORMAL REPORT)
+   =================================================== */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 15mm 12mm 15mm 12mm;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Sarabun', 'Prompt', sans-serif !important;
+        font-size: 13pt;
+        line-height: 1.4;
+    }
+
+    /* Hide entire interactive web UI elements when printing */
+    header, 
+    nav, 
+    #view-lobby, 
+    #view-quiz, 
+    #view-result, 
+    #view-bigscreen,
+    #modal-teacher-pin,
+    #modal-image-zoom,
+    #modal-question-edit,
+    #modal-roster-bulk,
+    .teacher-nav-header,
+    .teacher-tab-btn,
+    .no-print,
+    button {
+        display: none !important;
+    }
+
+    /* Show only the dedicated Print Section */
+    #print-section {
+        display: block !important;
+        visibility: visible !important;
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        color: #1a202c !important;
+    }
+
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 11pt;
+    }
+
+    .print-table th {
+        background-color: #f3f4f6 !important;
+        color: #111827 !important;
+        border: 1px solid #9ca3af !important;
+        padding: 6px 8px;
+        font-weight: bold;
+    }
+
+    .print-table td {
+        border: 1px solid #d1d5db !important;
+        padding: 5px 8px;
+        color: #1f2937 !important;
+    }
+
+    .print-header {
+        border-bottom: 2px solid #1f2937;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+    }
+
+    .print-badge {
+        border: 1px solid #4b5563;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 9pt;
+    }
+}
+
+/* Hide print section on normal screen view */
+@media screen {
+    #print-section {
+        display: none !important;
+    }
+}

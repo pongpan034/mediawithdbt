@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "name": "mediawithdbt-quiz-show",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
