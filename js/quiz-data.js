@@ -159,7 +159,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ca-01',
         category: 'camera_angle',
         title: 'ภาพมุมมองจากด้านบนตรง 90 องศาลงมา (เหมือนมุมมองนกมองจากท้องฟ้า) คือมุมกล้องใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=1200&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1t0JaVaVkULyXvvayowoDEFdi1ZZnss81/view?usp=sharing',
         options: [
             "Bird's Eye View / Aerial Shot",
             'Low Angle (มุมต่ำ)',
@@ -279,7 +279,7 @@ const DEFAULT_QUESTIONS = [
 
 class QuizDataManager {
     constructor() {
-        this.storageKey = 'dbt_quiz_questions_v1';
+        this.storageKey = 'dbt_quiz_questions_v2';
         this.resultsKey = 'dbt_quiz_results_v1';
     }
 
