@@ -50,7 +50,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ss-02',
         category: 'shot_size',
         title: 'ภาพตัวละครยืนเต็มตัวตั้งแต่หัวจรดเท้า จัดเป็นขนาดภาพแบบใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1UDpqKDSJQlswwZ_5h5dOccT7CZ7AY-_j/view?usp=sharing',
         options: [
             'MCU - Medium Close-Up',
             'LS - Long Shot (ภาพระยะไกล / เต็มตัว)',
@@ -65,7 +65,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ss-03',
         category: 'shot_size',
         title: 'ภาพนี้ตัดกรอบตั้งแต่ "ระดับหัวเข่าขึ้นไปจนถึงศีรษะ" เรียกว่าอะไร?',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1fDlvWRVSO-4okB6Yb3gLqA4oaHXpPrdo/view?usp=drive_link',
         options: [
             'CU - Close-Up',
             'MLS - Medium Long Shot (Knee Shot)',
@@ -125,7 +125,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ss-07',
         category: 'shot_size',
         title: 'ภาพเจาะจงเฉพาะ "ดวงตา" หรือชิ้นส่วนเล็กๆ อย่างชัดเจน เรียกว่าขนาดภาพใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1R6Tl0bV0V-4qnwCKy1iY81-B96VU6VW4/view?usp=sharing',
         options: [
             'MCU - Medium Close-Up',
             'LS - Long Shot',
@@ -140,7 +140,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ss-08',
         category: 'shot_size',
         title: 'ภาพที่ตัดกรอบแน่นมากตั้งแต่ "หน้าผากจรดปลายคาง" (Choker) สร้างความรู้สึกกดดัน คือข้อใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/1QcIjwOala48GxiTClm7olqZq8KFxelO8/view?usp=sharing',
         options: [
             'BCU - Big Close-Up',
             'MLS - Medium Long Shot',
@@ -174,7 +174,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q-ca-02',
         category: 'camera_angle',
         title: 'กล้องอยู่สูงกว่าตัวละครแล้ว "ก้มหน้ากล้องลงมา" ทำให้ตัวละครดูตัวเล็ก ด้อยค่า หรือน่าสงสาร คือมุมกล้องใด?',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80',
+        imageUrl: 'https://drive.google.com/file/d/10aX234QMn7GLKR3VDbiCEZGLbJI8FUe2/view?usp=sharing',
         options: [
             'Low Angle (มุมต่ำ)',
             'High Angle (มุมสูง)',
@@ -279,7 +279,7 @@ const DEFAULT_QUESTIONS = [
 
 class QuizDataManager {
     constructor() {
-        this.storageKey = 'dbt_quiz_questions_v2';
+        this.storageKey = 'dbt_quiz_questions_v3';
         this.resultsKey = 'dbt_quiz_results_v1';
     }
 
