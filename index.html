@@ -107,20 +107,37 @@
 
             <!-- Setup Form Card -->
             <div class="glass-panel-glow rounded-3xl p-6 md:p-8 space-y-6">
-                <!-- Step 1: Select Student -->
-                <div class="space-y-2">
+                <!-- Step 1: Student Information Inputs (ชื่อ-นามสกุล, กลุ่มเรียน, รหัสนักศึกษา) -->
+                <div class="space-y-3">
                     <label class="block text-sm font-bold text-purple-300 flex items-center space-x-2">
                         <span class="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs">1</span>
-                        <span>เลือกรหัสนักศึกษา และชื่อ-นามสกุล ของคุณ (ไม่ต้องจำรหัสผ่าน)</span>
+                        <span>กรอกข้อมูลนักศึกษา (ชื่อ-นามสกุล, กลุ่มเรียน, รหัสนักศึกษา)</span>
                     </label>
-                    <select id="student-select" class="w-full p-4 rounded-2xl bg-gray-900/90 border-2 border-purple-500/40 text-white text-base focus:border-purple-400 focus:ring-4 focus:ring-purple-500/20 transition-all outline-none">
-                        <option value="" disabled selected>-- กำลังโหลดรายชื่อนักศึกษา... --</option>
-                    </select>
 
-                    <!-- Custom Name Input (if not in roster) -->
-                    <div id="custom-student-group" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        <input type="text" id="custom-student-id" placeholder="รหัสนักศึกษา เช่น 6601001" class="p-3 rounded-xl bg-gray-900 border border-purple-500/40 text-white text-sm focus:border-purple-400 outline-none">
-                        <input type="text" id="custom-student-name" placeholder="ชื่อ-นามสกุล เช่น นายสมชาย ใจดี" class="p-3 rounded-xl bg-gray-900 border border-purple-500/40 text-white text-sm focus:border-purple-400 outline-none">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Full Name -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 mb-1">
+                                ชื่อ - นามสกุล <span class="text-rose-400">*</span>
+                            </label>
+                            <input type="text" id="input-student-name" placeholder="เช่น กิตติศักดิ์ สุขสวัสดิ์" class="w-full p-3.5 rounded-2xl bg-gray-900/90 border-2 border-purple-500/40 text-white text-sm focus:border-purple-400 focus:ring-4 focus:ring-purple-500/20 transition-all outline-none" required autocomplete="name" />
+                        </div>
+
+                        <!-- Class / Group -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 mb-1">
+                                กลุ่มเรียน / ห้องเรียน <span class="text-rose-400">*</span>
+                            </label>
+                            <input type="text" id="input-student-group" placeholder="เช่น กลุ่ม 1, SMCTC-69, วท.66/1" class="w-full p-3.5 rounded-2xl bg-gray-900/90 border-2 border-purple-500/40 text-white text-sm focus:border-purple-400 focus:ring-4 focus:ring-purple-500/20 transition-all outline-none" required />
+                        </div>
+
+                        <!-- Student ID -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 mb-1">
+                                รหัสนักศึกษา <span class="text-rose-400">*</span>
+                            </label>
+                            <input type="text" id="input-student-id" placeholder="เช่น 6601001 หรือ 034" class="w-full p-3.5 rounded-2xl bg-gray-900/90 border-2 border-purple-500/40 text-white text-sm font-mono focus:border-purple-400 focus:ring-4 focus:ring-purple-500/20 transition-all outline-none" required />
+                        </div>
                     </div>
                 </div>
 
@@ -693,13 +710,14 @@
         <table class="print-table">
             <thead>
                 <tr>
-                    <th style="width: 6%;">ลำดับ</th>
-                    <th style="width: 18%;">รหัสนักศึกษา</th>
-                    <th style="width: 28%;">ชื่อ - นามสกุล</th>
-                    <th style="width: 12%;">ข้อที่ถูก</th>
-                    <th style="width: 12%;">ร้อยละ</th>
-                    <th style="width: 12%;">เวลาที่ใช้</th>
-                    <th style="width: 12%;">สลับจอ</th>
+                    <th style="width: 5%;">ลำดับ</th>
+                    <th style="width: 15%;">รหัสนักศึกษา</th>
+                    <th style="width: 25%;">ชื่อ - นามสกุล</th>
+                    <th style="width: 15%;">กลุ่มเรียน</th>
+                    <th style="width: 10%;">ข้อที่ถูก</th>
+                    <th style="width: 10%;">ร้อยละ</th>
+                    <th style="width: 10%;">เวลาที่ใช้</th>
+                    <th style="width: 10%;">สลับจอ</th>
                 </tr>
             </thead>
             <tbody id="print-table-body">

@@ -40,7 +40,7 @@ class DBTQuizApp {
     init() {
         this.cacheDom();
         this.bindEvents();
-        this.renderRosterDropdown();
+        this.loadSavedStudentInfo();
         this.checkUrlParameters();
         this.renderCategoryOptions();
     }
@@ -64,11 +64,10 @@ class DBTQuizApp {
             tabWarningDesc: document.getElementById('tab-warning-desc'),
             btnTabWarningAcknowledge: document.getElementById('btn-tab-warning-acknowledge'),
 
-            // Lobby elements
-            studentSelect: document.getElementById('student-select'),
-            customStudentId: document.getElementById('custom-student-id'),
-            customStudentName: document.getElementById('custom-student-name'),
-            customStudentGroup: document.getElementById('custom-student-group'),
+            // Lobby student inputs
+            inputStudentName: document.getElementById('input-student-name'),
+            inputStudentGroup: document.getElementById('input-student-group'),
+            inputStudentId: document.getElementById('input-student-id'),
             btnStartQuiz: document.getElementById('btn-start-quiz'),
             muteToggleBtn: document.getElementById('btn-toggle-mute'),
 
@@ -116,6 +115,20 @@ class DBTQuizApp {
         };
     }
 
+    loadSavedStudentInfo() {
+        try {
+            const saved = localStorage.getItem('dbt_last_student_info');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.name && this.dom.inputStudentName) this.dom.inputStudentName.value = parsed.name;
+                if (parsed.group && this.dom.inputStudentGroup) this.dom.inputStudentGroup.value = parsed.group;
+                if (parsed.id && this.dom.inputStudentId) this.dom.inputStudentId.value = parsed.id;
+            }
+        } catch (e) {
+            console.warn('Cannot load saved student info', e);
+        }
+    }
+
     bindEvents() {
         // Anti-Cheat Screen / Tab Switch Detector
         const onVisibilityOrFocusChange = () => {
@@ -156,18 +169,6 @@ class DBTQuizApp {
                 this.updateMuteIcon(isMuted);
             });
             this.updateMuteIcon(quizAudio.isMuted);
-        }
-
-        // Student selection change
-        if (this.dom.studentSelect) {
-            this.dom.studentSelect.addEventListener('change', (e) => {
-                const val = e.target.value;
-                if (val === 'CUSTOM') {
-                    this.dom.customStudentGroup.classList.remove('hidden');
-                } else {
-                    this.dom.customStudentGroup.classList.add('hidden');
-                }
-            });
         }
 
         // Category selection cards
@@ -340,7 +341,7 @@ class DBTQuizApp {
 
         if (viewName === 'lobby') {
             if (this.dom.viewLobby) this.dom.viewLobby.classList.remove('hidden');
-            this.renderRosterDropdown();
+            this.loadSavedStudentInfo();
             this.renderCategoryOptions();
         } else if (viewName === 'quiz') {
             if (this.dom.viewQuiz) this.dom.viewQuiz.classList.remove('hidden');
@@ -362,32 +363,40 @@ class DBTQuizApp {
     // ==========================================
 
     handleStartQuiz() {
-        // Validate Student Selection
-        const selectVal = this.dom.studentSelect.value;
-        if (!selectVal) {
-            alert('กรุณาเลือกชื่อ-รหัสนักศึกษาก่อนเริ่มทำแบบทดสอบ');
+        // Validate Student Inputs (ชื่อ-นามสกุล, กลุ่มเรียน, รหัสนักศึกษา)
+        const name = this.dom.inputStudentName ? this.dom.inputStudentName.value.trim() : '';
+        const group = this.dom.inputStudentGroup ? this.dom.inputStudentGroup.value.trim() : '';
+        const id = this.dom.inputStudentId ? this.dom.inputStudentId.value.trim() : '';
+
+        if (!name) {
+            alert('กรุณากรอกชื่อ - นามสกุล ของคุณก่อนเริ่มทำแบบทดสอบ');
+            if (this.dom.inputStudentName) this.dom.inputStudentName.focus();
             return;
         }
 
-        if (selectVal === 'CUSTOM') {
-            const customId = this.dom.customStudentId.value.trim();
-            const customName = this.dom.customStudentName.value.trim();
-            if (!customId || !customName) {
-                alert('กรุณากรอกรหัสและชื่อ-นามสกุลนักศึกษาให้ครบถ้วน');
-                return;
-            }
-            this.selectedStudent = {
-                id: customId,
-                name: customName,
-                nickname: ''
-            };
-            // Add to roster for future convenience
-            rosterManager.addStudent(this.selectedStudent);
-        } else {
-            const students = rosterManager.getStudents();
-            const found = students.find(s => s.id === selectVal);
-            this.selectedStudent = found || { id: selectVal, name: 'นักศึกษา', nickname: '' };
+        if (!group) {
+            alert('กรุณากรอกกลุ่มเรียน / ห้องเรียน ของคุณ');
+            if (this.dom.inputStudentGroup) this.dom.inputStudentGroup.focus();
+            return;
         }
+
+        if (!id) {
+            alert('กรุณากรอกรหัสนักศึกษาของคุณ');
+            if (this.dom.inputStudentId) this.dom.inputStudentId.focus();
+            return;
+        }
+
+        // Save into localStorage for convenient next sessions
+        try {
+            localStorage.setItem('dbt_last_student_info', JSON.stringify({ name, group, id }));
+        } catch (e) {}
+
+        this.selectedStudent = {
+            id: id,
+            name: name,
+            group: group,
+            nickname: group
+        };
 
         // Initialize Audio on user interaction
         quizAudio.init();
@@ -803,6 +812,7 @@ class DBTQuizApp {
             id: 'res-' + Date.now(),
             studentId: this.selectedStudent.id,
             studentName: this.selectedStudent.name,
+            studentGroup: this.selectedStudent.group || '-',
             score: this.score,
             maxPossibleScore: maxPossibleScore,
             correctCount: this.correctCount,
@@ -830,7 +840,7 @@ class DBTQuizApp {
         this.dom.resultRankTitle.innerText = rankTitle;
         this.dom.resultTimeUsed.innerText = `${totalTimeUsed} วินาที`;
         this.dom.resultCorrectSummary.innerText = `${this.correctCount} / ${totalQuestions} ข้อ`;
-        this.dom.resultStudentInfo.innerText = `${this.selectedStudent.id} - ${this.selectedStudent.name}`;
+        this.dom.resultStudentInfo.innerText = `${this.selectedStudent.id} - ${this.selectedStudent.name} (กลุ่ม: ${this.selectedStudent.group || '-'})`;
 
         if (this.dom.resultTabSwitches) {
             if (this.tabSwitchCount === 0) {
@@ -1231,13 +1241,14 @@ class DBTQuizApp {
 
         let tableRows = '';
         if (results.length === 0) {
-            tableRows = `<tr><td colspan="9" class="text-center py-8 text-gray-500">ยังไม่มีประวัติการส่งคะแนนในระบบ</td></tr>`;
+            tableRows = `<tr><td colspan="10" class="text-center py-8 text-gray-500">ยังไม่มีประวัติการส่งคะแนนในระบบ</td></tr>`;
         } else {
             tableRows = results.map((r, idx) => `
                 <tr class="border-b border-gray-800 hover:bg-white/5 transition-colors text-sm">
                     <td class="py-3 px-4 text-center text-gray-400">${idx + 1}</td>
                     <td class="py-3 px-4 font-mono font-bold text-purple-300">${r.studentId}</td>
                     <td class="py-3 px-4 text-white font-medium">${r.studentName}</td>
+                    <td class="py-3 px-4 text-gray-300 text-xs">${r.studentGroup || '-'}</td>
                     <td class="py-3 px-4 text-gray-300 text-xs">${r.modeTitle || '-'}</td>
                     <td class="py-3 px-4 text-center">
                         <span class="px-2.5 py-1 rounded-full text-xs font-bold ${r.percentage >= 60 ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' : 'bg-rose-950 text-rose-400 border border-rose-500/40'}">
@@ -1281,6 +1292,7 @@ class DBTQuizApp {
                                 <th class="py-3 px-4 text-center w-12">ลำดับ</th>
                                 <th class="py-3 px-4">รหัสนักศึกษา</th>
                                 <th class="py-3 px-4">ชื่อ-นามสกุล</th>
+                                <th class="py-3 px-4">กลุ่มเรียน</th>
                                 <th class="py-3 px-4">โหมด</th>
                                 <th class="py-3 px-4 text-center">คะแนน</th>
                                 <th class="py-3 px-4 text-center">เกรด</th>
@@ -1519,8 +1531,9 @@ class DBTQuizApp {
             <div class="flex flex-col items-center">
                 ${second ? `
                     <div class="text-center mb-2">
-                        <span class="text-2xl font-bold text-gray-300 block">${second.studentName}</span>
-                        <span class="text-sm font-mono text-purple-300 font-bold">${second.score} คะแนน (${second.percentage}%)</span>
+                        <span class="text-xl md:text-2xl font-bold text-gray-300 block">${second.studentName}</span>
+                        <span class="text-xs text-gray-400 block">${second.studentGroup ? `[${second.studentGroup}]` : ''} (${second.studentId})</span>
+                        <span class="text-sm font-mono text-purple-300 font-bold mt-1 inline-block">${second.score} คะแนน (${second.percentage}%)</span>
                     </div>
                 ` : '<div class="h-12"></div>'}
                 <div class="w-28 md:w-36 h-36 md:h-44 bg-gradient-to-t from-gray-700 to-gray-500 rounded-t-3xl flex items-center justify-center border-t-4 border-gray-300 shadow-2xl shadow-gray-500/20">
@@ -1532,8 +1545,9 @@ class DBTQuizApp {
             <div class="flex flex-col items-center">
                 ${first ? `
                     <div class="text-center mb-2 animate-bounce">
-                        <span class="text-3xl font-black text-amber-300 block">👑 ${first.studentName}</span>
-                        <span class="text-base font-mono text-amber-200 font-bold bg-amber-950/80 px-3 py-1 rounded-full border border-amber-500/50">${first.score} คะแนน (${first.percentage}%)</span>
+                        <span class="text-2xl md:text-3xl font-black text-amber-300 block">👑 ${first.studentName}</span>
+                        <span class="text-xs text-amber-200/80 block">${first.studentGroup ? `[${first.studentGroup}]` : ''} (${first.studentId})</span>
+                        <span class="text-base font-mono text-amber-200 font-bold bg-amber-950/80 px-3 py-1 rounded-full border border-amber-500/50 mt-1 inline-block">${first.score} คะแนน (${first.percentage}%)</span>
                     </div>
                 ` : '<div class="h-16"></div>'}
                 <div class="w-32 md:w-44 h-48 md:h-60 bg-gradient-to-t from-amber-600 to-yellow-400 rounded-t-3xl flex items-center justify-center border-t-4 border-yellow-200 shadow-2xl shadow-yellow-500/40 relative">
@@ -1545,8 +1559,9 @@ class DBTQuizApp {
             <div class="flex flex-col items-center">
                 ${third ? `
                     <div class="text-center mb-2">
-                        <span class="text-2xl font-bold text-amber-600 block">${third.studentName}</span>
-                        <span class="text-sm font-mono text-amber-400 font-bold">${third.score} คะแนน (${third.percentage}%)</span>
+                        <span class="text-xl md:text-2xl font-bold text-amber-600 block">${third.studentName}</span>
+                        <span class="text-xs text-gray-400 block">${third.studentGroup ? `[${third.studentGroup}]` : ''} (${third.studentId})</span>
+                        <span class="text-sm font-mono text-amber-400 font-bold mt-1 inline-block">${third.score} คะแนน (${third.percentage}%)</span>
                     </div>
                 ` : '<div class="h-12"></div>'}
                 <div class="w-28 md:w-36 h-28 md:h-36 bg-gradient-to-t from-amber-800 to-amber-700 rounded-t-3xl flex items-center justify-center border-t-4 border-amber-500 shadow-2xl shadow-amber-700/20">
@@ -1564,8 +1579,10 @@ class DBTQuizApp {
                 <div class="p-3.5 rounded-xl bg-gray-900/60 border border-gray-800 flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <span class="w-8 h-8 rounded-lg bg-gray-800 font-bold text-sm text-gray-300 flex items-center justify-center">${i + 4}</span>
-                        <span class="font-bold text-white text-base">${r.studentName}</span>
-                        <span class="text-xs text-gray-400 font-mono">(${r.studentId})</span>
+                        <div>
+                            <span class="font-bold text-white text-base">${r.studentName}</span>
+                            <span class="text-xs text-gray-400 font-mono ml-1.5">${r.studentGroup ? `[${r.studentGroup}]` : ''} (${r.studentId})</span>
+                        </div>
                     </div>
                     <span class="font-mono font-bold text-purple-400">${r.score} คะแนน</span>
                 </div>

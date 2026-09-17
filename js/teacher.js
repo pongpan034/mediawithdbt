@@ -163,6 +163,7 @@ class TeacherController {
                 'ลำดับ': index + 1,
                 'รหัสนักศึกษา': r.studentId,
                 'ชื่อ-นามสกุล': r.studentName,
+                'กลุ่มเรียน': r.studentGroup || '-',
                 'โหมดแบบทดสอบ': r.modeTitle || 'ทั่วไป',
                 'คะแนนที่ได้': r.score,
                 'คะแนนเต็ม': r.maxPossibleScore || 1000,
@@ -182,6 +183,7 @@ class TeacherController {
             { wch: 8 },  // ลำดับ
             { wch: 15 }, // รหัสนักศึกษา
             { wch: 26 }, // ชื่อ-นามสกุล
+            { wch: 18 }, // กลุ่มเรียน
             { wch: 20 }, // โหมด
             { wch: 12 }, // คะแนน
             { wch: 12 }, // เต็ม
@@ -237,13 +239,14 @@ class TeacherController {
         const tableBody = document.getElementById('print-table-body');
         if (tableBody) {
             if (results.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4">ยังไม่มีข้อมูลการส่งแบบทดสอบ</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">ยังไม่มีข้อมูลการส่งแบบทดสอบ</td></tr>`;
             } else {
                 tableBody.innerHTML = results.map((r, i) => `
                     <tr class="border-b border-gray-300">
                         <td class="py-2 px-2 text-center">${i + 1}</td>
                         <td class="py-2 px-2 font-mono font-bold">${r.studentId}</td>
                         <td class="py-2 px-2">${r.studentName}</td>
+                        <td class="py-2 px-2 text-center">${r.studentGroup || '-'}</td>
                         <td class="py-2 px-2 text-center">${r.correctCount}/${r.totalQuestions}</td>
                         <td class="py-2 px-2 text-center font-bold">${r.percentage}%</td>
                         <td class="py-2 px-2 text-center">${r.totalTimeUsed} วินาที</td>
