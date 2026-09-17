@@ -43,7 +43,7 @@ const DEFAULT_QUESTIONS = [
             'ECU - Extreme Close-Up (ภาพระยะใกล้มาก)'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'เป็น Extreme Long Shot (ELS) เพราะเน้นการโชว์ทัศนียภาพกว้างใหญ่เพื่อบอกบริบทและสถานที่ สเกลตัวแบบมีขนาดเล็กมากเมื่อเทียบกับสิ่งแวดล้อม'
     },
     {
@@ -58,7 +58,7 @@ const DEFAULT_QUESTIONS = [
             'ELS - Extreme Long Shot'
         ],
         correctIndex: 1,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Long Shot (LS) หรือ Full Shot จะแสดงรูปร่างของบุคคลตั้งแต่ศีรษะจรดปลายเท้า ให้เห็นอิริยาบถและการแต่งกายชัดเจนควบคู่กับฉากหลัง'
     },
     {
@@ -73,7 +73,7 @@ const DEFAULT_QUESTIONS = [
             'ELS - Extreme Long Shot'
         ],
         correctIndex: 1,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Medium Long Shot (MLS) หรือ Knee Shot เป็นขนาดภาพตัดระดับหัวเข่าถึงศีรษะ ให้เห็นทั้งการเคลื่อนไหวของร่างกายและสีหน้าไปพร้อมกัน'
     },
     {
@@ -88,7 +88,7 @@ const DEFAULT_QUESTIONS = [
             'ECU - Extreme Close-Up'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Medium Shot (MS) หรือ Waist Shot ตัดภาพตั้งแต่เอวถึงศีรษะ เป็นขนาดภาพพื้นฐานที่นิยมที่สุดในงานวิดีโอ การสัมภาษณ์ และผู้ประกาศข่าว'
     },
     {
@@ -103,7 +103,7 @@ const DEFAULT_QUESTIONS = [
             'ECU - Extreme Close-Up'
         ],
         correctIndex: 1,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Medium Close-Up (MCU) จะจับภาพตั้งแต่ระดับหน้าอกขึ้นไป ช่วยดึงความสนใจมาที่สีหน้าท่าทางและบทสนทนาได้ชัดเจนขึ้น'
     },
     {
@@ -118,7 +118,7 @@ const DEFAULT_QUESTIONS = [
             'ELS - Extreme Long Shot'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Close-Up (CU) เป็นการถ่ายภาพระยะใกล้ตั้งแต่ระดับไหล่ถึงศีรษะ เน้นสีหน้า แววตา และการแสดงอารมณ์ของนักแสดงอย่างเด่นชัด'
     },
     {
@@ -133,7 +133,7 @@ const DEFAULT_QUESTIONS = [
             'MS - Medium Shot'
         ],
         correctIndex: 2,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Extreme Close-Up (ECU) เป็นการซูมหรือถ่ายเจาะเฉพาะจุดสำคัญ เช่น ดวงตา, นาฬิกา, นิ้วมือ เพื่อเน้นรายละเอียดสูงสุด'
     },
     {
@@ -148,7 +148,7 @@ const DEFAULT_QUESTIONS = [
             'LS - Long Shot'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Big Close-Up (BCU) หรือ Choker จะตัดกรอบตั้งแต่คางถึงหน้าผาก เพื่อบีบอารมณ์ผู้ชมให้รู้สึกตึงเครียดหรือสัมผัสความรู้สึกข้างในของตัวละคร'
     },
 
@@ -167,7 +167,7 @@ const DEFAULT_QUESTIONS = [
             'Dutch Angle (มุมเอียง)'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: "Bird's Eye View (มุมมองนกมอง หรือ Aerial Shot) คือการถ่ายภาพมุมสูงตรง 90 องศาลงมา มักใช้โดรนหรือเครน เพื่อแสดงผังเมืองหรือภาพรวมทั้งหมด"
     },
     {
@@ -182,7 +182,7 @@ const DEFAULT_QUESTIONS = [
             'Worm’s Eye View (มุมหนอนมอง)'
         ],
         correctIndex: 1,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'High Angle (มุมสูง) จะวางกล้องสูงกว่าแล้วกดมุมก้มลงมา สื่อความหมายเชิงสัญลักษณ์ให้ตัวละครดูอ่อนแอ ตกเป็นเบี้ยล่าง หรือไร้อำนาจ'
     },
     {
@@ -197,7 +197,7 @@ const DEFAULT_QUESTIONS = [
             'Bird’s Eye View'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Eye Level (มุมระดับสายตา) เป็นมุมกล้องพื้นฐานที่วางขนานกับระดับสายตามนุษย์ สื่อถึงความเสมอภาค เป็นกลาง และเป็นธรรมชาติมากที่สุด'
     },
     {
@@ -212,7 +212,7 @@ const DEFAULT_QUESTIONS = [
             'Dutch Angle (มุมเอียง)'
         ],
         correctIndex: 1,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Low Angle (มุมต่ำ) จะวางกล้องต่ำแล้วเงยขึ้น ทำให้วัตถุหรือตัวละครดูสูงตระหง่าน มีพลัง อำนาจ หรือความน่าเกรงขาม'
     },
     {
@@ -227,7 +227,7 @@ const DEFAULT_QUESTIONS = [
             'High Angle (มุมสูง)'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: "Worm's Eye View (มุมมองหนอนมอง) คือมุมที่กล้องอยู่ติดพื้นดินที่สุดแล้วเงยขึ้น มักใช้ถ่ายตึกสูง ต้นไม้ใหญ่ หรือสิ่งก่อสร้างให้อลังการ"
     },
     {
@@ -242,7 +242,7 @@ const DEFAULT_QUESTIONS = [
             'High Angle'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Dutch Angle (มุมเอียง) มีการเอียงเส้นขอบฟ้า สร้างความรู้สึกไม่ปลอดภัย สับสน วิตกกังวล หรือโลกกำลังเสียสมดุล'
     },
     {
@@ -257,7 +257,7 @@ const DEFAULT_QUESTIONS = [
             'Worm’s Eye View'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Over the Shoulder (OTS) คือมุมมองข้ามหัวไหล่ตัวละคร ช่วยสร้างความเชื่อมโยงในบทสนทนาระหว่าง 2 คนได้เป็นธรรมชาติ'
     },
     {
@@ -272,14 +272,14 @@ const DEFAULT_QUESTIONS = [
             'Low Angle'
         ],
         correctIndex: 0,
-        timeLimit: 15,
+        timeLimit: 20,
         explanation: 'Point of View (POV) ทำให้ผู้ชมได้รับประสบการณ์เสมือนเป็นตัวละครนั้นจริง ๆ เช่น มองเห็นมือตัวเองกำลังหยิบของ หรือมองเห็นสิ่งที่ตัวละครจ้องอยู่'
     }
 ];
 
 class QuizDataManager {
     constructor() {
-        this.storageKey = 'dbt_quiz_questions_v4';
+        this.storageKey = 'dbt_quiz_questions_v5';
         this.resultsKey = 'dbt_quiz_results_v1';
     }
 
@@ -316,7 +316,7 @@ class QuizDataManager {
             imageUrl: q.imageUrl,
             options: q.options,
             correctIndex: parseInt(q.correctIndex, 10),
-            timeLimit: parseInt(q.timeLimit, 10) || 15,
+            timeLimit: parseInt(q.timeLimit, 10) || 20,
             explanation: q.explanation || ''
         };
         list.push(newQuestion);

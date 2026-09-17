@@ -16,7 +16,7 @@ class DBTQuizApp {
         this.currentQuestionIndex = 0;
         this.timer = null;
         this.timeLeft = 0;
-        this.maxTime = 15;
+        this.maxTime = 20;
         this.isAnsweringLocked = false;
 
         // Anti-Cheat & Screen Switching State
@@ -590,7 +590,7 @@ class DBTQuizApp {
         this.dom.quizFeedbackCard.classList.add('hidden');
 
         // Start Question Timer
-        this.startTimer(q.timeLimit || 15);
+        this.startTimer(q.timeLimit || 20);
     }
 
     startTimer(seconds) {
@@ -1348,7 +1348,7 @@ class DBTQuizApp {
         document.getElementById('q-edit-opt2').value = '';
         document.getElementById('q-edit-opt3').value = '';
         document.getElementById('q-edit-correct').value = '0';
-        document.getElementById('q-edit-timelimit').value = '15';
+        document.getElementById('q-edit-timelimit').value = '20';
         document.getElementById('q-edit-explanation').value = '';
         document.getElementById('q-edit-preview-img').src = '';
         document.getElementById('q-edit-preview-box').classList.add('hidden');
@@ -1371,7 +1371,7 @@ class DBTQuizApp {
         document.getElementById('q-edit-opt2').value = q.options[2] || '';
         document.getElementById('q-edit-opt3').value = q.options[3] || '';
         document.getElementById('q-edit-correct').value = String(q.correctIndex || 0);
-        document.getElementById('q-edit-timelimit').value = String(q.timeLimit || 15);
+        document.getElementById('q-edit-timelimit').value = String(q.timeLimit || 20);
         document.getElementById('q-edit-explanation').value = q.explanation || '';
 
         const formatted = teacherController.formatImageUrl(q.imageUrl);
@@ -1390,7 +1390,7 @@ class DBTQuizApp {
         const opt2 = document.getElementById('q-edit-opt2').value.trim();
         const opt3 = document.getElementById('q-edit-opt3').value.trim();
         const correctIndex = parseInt(document.getElementById('q-edit-correct').value, 10);
-        const timeLimit = parseInt(document.getElementById('q-edit-timelimit').value, 10) || 15;
+        const timeLimit = parseInt(document.getElementById('q-edit-timelimit').value, 10) || 20;
         const explanation = document.getElementById('q-edit-explanation').value.trim();
 
         if (!title || !imageUrl || !opt0 || !opt1 || !opt2 || !opt3) {
