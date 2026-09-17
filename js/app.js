@@ -18,6 +18,12 @@ class DBTQuizApp {
         this.timeLeft = 0;
         this.maxTime = 15;
         this.isAnsweringLocked = false;
+
+        // Anti-Cheat & Screen Switching State
+        this.tabSwitchCount = 0;
+        this.maxAllowedTabSwitches = 3;
+        this.isDisqualified = false;
+        this.isWarningModalOpen = false;
         
         // Scoring & Stats
         this.score = 0;
@@ -53,6 +59,10 @@ class DBTQuizApp {
             modalImageZoom: document.getElementById('modal-image-zoom'),
             modalQuestionEdit: document.getElementById('modal-question-edit'),
             modalRosterBulk: document.getElementById('modal-roster-bulk'),
+            modalTabWarning: document.getElementById('modal-tab-warning'),
+            tabWarningStrikeBadge: document.getElementById('tab-warning-strike-badge'),
+            tabWarningDesc: document.getElementById('tab-warning-desc'),
+            btnTabWarningAcknowledge: document.getElementById('btn-tab-warning-acknowledge'),
 
             // Lobby elements
             studentSelect: document.getElementById('student-select'),
@@ -86,6 +96,7 @@ class DBTQuizApp {
             resultRankTitle: document.getElementById('result-rank-title'),
             resultTimeUsed: document.getElementById('result-time-used'),
             resultCorrectSummary: document.getElementById('result-correct-summary'),
+            resultTabSwitches: document.getElementById('result-tab-switches'),
             resultStudentInfo: document.getElementById('result-student-info'),
             resultReviewList: document.getElementById('result-review-list'),
 
@@ -106,6 +117,26 @@ class DBTQuizApp {
     }
 
     bindEvents() {
+        // Anti-Cheat Screen / Tab Switch Detector
+        const onVisibilityOrFocusChange = () => {
+            if (this.currentView === 'quiz' && !this.isWarningModalOpen) {
+                if (document.hidden || !document.hasFocus()) {
+                    this.handleTabSwitch();
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', onVisibilityOrFocusChange);
+        window.addEventListener('blur', onVisibilityOrFocusChange);
+        window.addEventListener('pagehide', onVisibilityOrFocusChange);
+
+        // Acknowledge Warning Button
+        if (this.dom.btnTabWarningAcknowledge) {
+            this.dom.btnTabWarningAcknowledge.addEventListener('click', () => {
+                this.handleCloseTabWarning();
+            });
+        }
+
         // Navigation / View Switching
         document.querySelectorAll('[data-view-target]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -382,18 +413,82 @@ class DBTQuizApp {
             this.activeQuestions = shuffled;
         }
 
-        // Reset game stats
+        // Reset game stats & anti-cheat counter
         this.currentQuestionIndex = 0;
         this.score = 0;
         this.combo = 0;
         this.maxCombo = 0;
         this.correctCount = 0;
+        this.tabSwitchCount = 0;
+        this.isDisqualified = false;
+        this.isWarningModalOpen = false;
         this.userAnswers = [];
         this.sessionStartTime = Date.now();
 
         // Switch to Quiz View & Render First Question
         this.switchView('quiz');
         this.renderQuestion();
+    }
+
+    // ==========================================
+    // ANTI-CHEAT SCREEN SWITCHING SYSTEM
+    // ==========================================
+
+    handleTabSwitch() {
+        if (this.currentView !== 'quiz' || this.isWarningModalOpen) return;
+        this.isWarningModalOpen = true;
+        this.tabSwitchCount++;
+
+        // Play warning audio alarm & Vibrate device on mobile
+        quizAudio.playWarningAlarm();
+        if (navigator.vibrate) {
+            navigator.vibrate([300, 150, 300, 150, 400]);
+        }
+
+        if (this.dom.tabWarningStrikeBadge) {
+            this.dom.tabWarningStrikeBadge.innerText = `คำเตือน: ตรวจพบการสลับหน้าจอ (ครั้งที่ ${this.tabSwitchCount}/${this.maxAllowedTabSwitches})`;
+        }
+
+        if (this.tabSwitchCount >= this.maxAllowedTabSwitches) {
+            this.isDisqualified = true;
+            if (this.dom.tabWarningDesc) {
+                this.dom.tabWarningDesc.innerHTML = `
+                    <span class="text-rose-400 font-bold block text-base mb-1">🚫 ยุติการสอบอัตโนมัติ!</span>
+                    คุณสลับหน้าจอหรือเปิดแอปอื่นครบกำหนด <strong>${this.maxAllowedTabSwitches} ครั้ง</strong><br/>
+                    ระบบได้ทำการบันทึกข้อมูลและส่งคะแนนเท่าที่ทำได้ไปยังอาจารย์ผู้สอนทันที
+                `;
+            }
+            if (this.dom.btnTabWarningAcknowledge) {
+                this.dom.btnTabWarningAcknowledge.innerText = '📊 ดูผลคะแนนของคุณ';
+            }
+        } else {
+            const remaining = this.maxAllowedTabSwitches - this.tabSwitchCount;
+            if (this.dom.tabWarningDesc) {
+                this.dom.tabWarningDesc.innerHTML = `
+                    ระบบตรวจพบว่าคุณสลับแท็บ ย่อเบราว์เซอร์ หรือเปิดแอปพลิเคชันอื่นระหว่างทำแบบทดสอบ<br/>
+                    <span class="text-amber-300 font-bold block mt-1.5">⚠️ สลับหน้าจอได้อีก ${remaining} ครั้ง (หากครบ ${this.maxAllowedTabSwitches} ครั้งจะถูกยุติการสอบทันที)</span>
+                `;
+            }
+            if (this.dom.btnTabWarningAcknowledge) {
+                this.dom.btnTabWarningAcknowledge.innerText = '✓ รับทราบและกลับสู่การสอบ';
+            }
+        }
+
+        if (this.dom.modalTabWarning) {
+            this.dom.modalTabWarning.classList.remove('hidden');
+        }
+    }
+
+    handleCloseTabWarning() {
+        this.isWarningModalOpen = false;
+        if (this.dom.modalTabWarning) {
+            this.dom.modalTabWarning.classList.add('hidden');
+        }
+
+        // If strike limit exceeded, finish quiz immediately
+        if (this.tabSwitchCount >= this.maxAllowedTabSwitches) {
+            this.handleFinishQuiz();
+        }
     }
 
     renderQuestion() {
@@ -716,6 +811,8 @@ class DBTQuizApp {
             grade: grade,
             rankTitle: rankTitle,
             totalTimeUsed: totalTimeUsed,
+            tabSwitchCount: this.tabSwitchCount,
+            isDisqualified: this.isDisqualified,
             modeCategory: this.selectedCategory,
             modeTitle: modeTitle,
             answers: this.userAnswers,
@@ -734,6 +831,19 @@ class DBTQuizApp {
         this.dom.resultTimeUsed.innerText = `${totalTimeUsed} วินาที`;
         this.dom.resultCorrectSummary.innerText = `${this.correctCount} / ${totalQuestions} ข้อ`;
         this.dom.resultStudentInfo.innerText = `${this.selectedStudent.id} - ${this.selectedStudent.name}`;
+
+        if (this.dom.resultTabSwitches) {
+            if (this.tabSwitchCount === 0) {
+                this.dom.resultTabSwitches.innerText = '0 ครั้ง (ปกติ)';
+                this.dom.resultTabSwitches.className = 'text-xl sm:text-2xl font-black text-emerald-400 font-mono';
+            } else if (this.tabSwitchCount < this.maxAllowedTabSwitches) {
+                this.dom.resultTabSwitches.innerText = `${this.tabSwitchCount} ครั้ง ⚠️`;
+                this.dom.resultTabSwitches.className = 'text-xl sm:text-2xl font-black text-amber-400 font-mono';
+            } else {
+                this.dom.resultTabSwitches.innerText = `${this.tabSwitchCount} ครั้ง (ตัดสิทธิ์)`;
+                this.dom.resultTabSwitches.className = 'text-xl sm:text-2xl font-black text-rose-500 font-mono';
+            }
+        }
 
         // Render Detailed Review List
         let reviewHtml = '';
@@ -1121,7 +1231,7 @@ class DBTQuizApp {
 
         let tableRows = '';
         if (results.length === 0) {
-            tableRows = `<tr><td colspan="8" class="text-center py-8 text-gray-500">ยังไม่มีประวัติการส่งคะแนนในระบบ</td></tr>`;
+            tableRows = `<tr><td colspan="9" class="text-center py-8 text-gray-500">ยังไม่มีประวัติการส่งคะแนนในระบบ</td></tr>`;
         } else {
             tableRows = results.map((r, idx) => `
                 <tr class="border-b border-gray-800 hover:bg-white/5 transition-colors text-sm">
@@ -1136,6 +1246,9 @@ class DBTQuizApp {
                     </td>
                     <td class="py-3 px-4 text-center font-bold">${r.grade}</td>
                     <td class="py-3 px-4 text-center text-gray-400 text-xs">${r.totalTimeUsed}s</td>
+                    <td class="py-3 px-4 text-center text-xs font-bold ${r.tabSwitchCount > 0 ? 'text-amber-400' : 'text-emerald-400'}">
+                        ${r.tabSwitchCount ? `${r.tabSwitchCount} ครั้ง ⚠️` : '0 ครั้ง'}
+                    </td>
                     <td class="py-3 px-4 text-center text-xs text-gray-400">${r.timestamp ? new Date(r.timestamp).toLocaleTimeString('th-TH') : '-'}</td>
                 </tr>
             `).join('');
@@ -1172,6 +1285,7 @@ class DBTQuizApp {
                                 <th class="py-3 px-4 text-center">คะแนน</th>
                                 <th class="py-3 px-4 text-center">เกรด</th>
                                 <th class="py-3 px-4 text-center">เวลา</th>
+                                <th class="py-3 px-4 text-center">สลับจอ</th>
                                 <th class="py-3 px-4 text-center">เวลาที่ส่ง</th>
                             </tr>
                         </thead>

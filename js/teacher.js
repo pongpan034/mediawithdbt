@@ -170,6 +170,7 @@ class TeacherController {
                 'เกรด/ระดับ': r.grade || 'N/A',
                 'จำนวนข้อที่ถูก': `${r.correctCount}/${r.totalQuestions}`,
                 'เวลาที่ใช้รวม (วินาที)': r.totalTimeUsed,
+                'การสลับหน้าจอ (ครั้ง)': r.tabSwitchCount || 0,
                 'วันที่-เวลาที่ทำ': r.timestamp ? new Date(r.timestamp).toLocaleString('th-TH') : '-'
             };
         });
@@ -188,6 +189,7 @@ class TeacherController {
             { wch: 12 }, // ระดับ
             { wch: 16 }, // ข้อถูก
             { wch: 22 }, // เวลา
+            { wch: 20 }, // การสลับหน้าจอ
             { wch: 22 }  // วันที่
         ];
         worksheet['!cols'] = colWidths;
@@ -239,13 +241,13 @@ class TeacherController {
             } else {
                 tableBody.innerHTML = results.map((r, i) => `
                     <tr class="border-b border-gray-300">
-                        <td class="py-2 px-3 text-center">${i + 1}</td>
-                        <td class="py-2 px-3 font-mono font-bold">${r.studentId}</td>
-                        <td class="py-2 px-3">${r.studentName}</td>
-                        <td class="py-2 px-3 text-center">${r.correctCount}/${r.totalQuestions}</td>
-                        <td class="py-2 px-3 text-center font-bold">${r.percentage}%</td>
-                        <td class="py-2 px-3 text-center">${r.totalTimeUsed} วินาที</td>
-                        <td class="py-2 px-3 text-center text-xs">${r.timestamp ? new Date(r.timestamp).toLocaleTimeString('th-TH') : '-'}</td>
+                        <td class="py-2 px-2 text-center">${i + 1}</td>
+                        <td class="py-2 px-2 font-mono font-bold">${r.studentId}</td>
+                        <td class="py-2 px-2">${r.studentName}</td>
+                        <td class="py-2 px-2 text-center">${r.correctCount}/${r.totalQuestions}</td>
+                        <td class="py-2 px-2 text-center font-bold">${r.percentage}%</td>
+                        <td class="py-2 px-2 text-center">${r.totalTimeUsed} วินาที</td>
+                        <td class="py-2 px-2 text-center text-xs font-bold ${r.tabSwitchCount > 0 ? 'text-red-600' : 'text-green-700'}">${r.tabSwitchCount ? r.tabSwitchCount + ' ครั้ง ⚠️' : '0 ครั้ง'}</td>
                     </tr>
                 `).join('');
             }

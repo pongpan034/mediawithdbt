@@ -5,23 +5,34 @@
     --bg-card: rgba(18, 20, 38, 0.85);
     --border-card: rgba(139, 92, 246, 0.25);
     --accent-glow: rgba(168, 85, 247, 0.4);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
     box-sizing: border-box;
     font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    background-color: var(--bg-main);
+    color: #e2e8f0;
+    overflow-x: hidden;
+    touch-action: manipulation;
 }
 
 body {
-    background-color: var(--bg-main);
-    color: #e2e8f0;
-    min-height: 100vh;
     background-image: 
         radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
         radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.08) 0px, transparent 60%);
     background-attachment: fixed;
-    overflow-x: hidden;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
 }
 
 /* Typography Enhancements */
@@ -46,6 +57,17 @@ body {
     box-shadow: 0 0 25px rgba(168, 85, 247, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
+/* Mobile & Touch Improvements */
+button, select, input, textarea {
+    touch-action: manipulation;
+}
+
+.quiz-option-btn {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
 /* Animations */
 @keyframes subtle-pulse {
     0%, 100% { transform: scale(1); }
@@ -65,10 +87,30 @@ body {
     animation: float 4s ease-in-out infinite;
 }
 
+/* Warning & Anti-Cheat Shake Animation */
+@keyframes shake-warning {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+    20%, 40%, 60%, 80% { transform: translateX(6px); }
+}
+
+.animate-shake {
+    animation: shake-warning 0.6s ease-in-out;
+}
+
+@keyframes warning-flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-warning-flash {
+    animation: warning-flash 1s infinite ease-in-out;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 ::-webkit-scrollbar-track {
     background: #0f111a;
@@ -79,6 +121,20 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #4a5568;
+}
+
+/* Small Screen / Mobile Optimizations */
+@media (max-width: 480px) {
+    .glass-panel, .glass-panel-glow {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+    }
+    h1 {
+        font-size: 1.15rem !important;
+    }
+    h2 {
+        font-size: 1.5rem !important;
+    }
 }
 
 /* ===================================================
@@ -109,6 +165,7 @@ body {
     #modal-image-zoom,
     #modal-question-edit,
     #modal-roster-bulk,
+    #modal-tab-warning,
     .teacher-nav-header,
     .teacher-tab-btn,
     .no-print,
@@ -132,20 +189,20 @@ body {
         width: 100%;
         border-collapse: collapse;
         margin-top: 15px;
-        font-size: 11pt;
+        font-size: 10pt;
     }
 
     .print-table th {
         background-color: #f3f4f6 !important;
         color: #111827 !important;
         border: 1px solid #9ca3af !important;
-        padding: 6px 8px;
+        padding: 6px 6px;
         font-weight: bold;
     }
 
     .print-table td {
         border: 1px solid #d1d5db !important;
-        padding: 5px 8px;
+        padding: 5px 6px;
         color: #1f2937 !important;
     }
 
