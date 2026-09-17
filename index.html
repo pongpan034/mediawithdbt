@@ -251,38 +251,45 @@
 
 
         <!-- ============================================================= -->
-        <!-- VIEW 2: QUIZ ARENA (VISUAL GAMEPLAY) -->
+        <!-- VIEW 2: QUIZ ARENA (SELF-PACED VISUAL GAMEPLAY) -->
         <!-- ============================================================= -->
         <section id="view-quiz" class="hidden space-y-4 md:space-y-5">
             <!-- HUD / Top Stats Bar -->
-            <div class="glass-panel rounded-2xl p-4 flex items-center justify-between gap-4">
+            <div class="glass-panel rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3">
                 <!-- Question Progress -->
-                <div class="space-y-1 min-w-[120px]">
+                <div class="space-y-1 min-w-[110px] sm:min-w-[130px]">
                     <div id="quiz-progress-text" class="text-xs font-bold text-purple-300">ข้อที่ 1 / 10</div>
-                    <div class="w-24 md:w-36 bg-gray-800 h-2 rounded-full overflow-hidden">
-                        <div id="quiz-progress-bar" class="h-full bg-purple-500 transition-all duration-300" style="width: 10%"></div>
+                    <div class="w-24 sm:w-36 bg-gray-800 h-2 rounded-full overflow-hidden">
+                        <div id="quiz-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300" style="width: 10%"></div>
                     </div>
                 </div>
 
-                <!-- Combo Multiplier Badge -->
-                <div id="quiz-combo-badge" class="hidden px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black text-xs md:text-sm animate-bounce shadow-lg shadow-amber-500/40">
-                    🔥 Combo x2
+                <!-- Stopwatch Elapsed Time Display -->
+                <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-500/30 text-purple-200 text-xs sm:text-sm font-bold font-mono">
+                    <span class="animate-pulse">⏱</span>
+                    <span class="text-gray-400 font-normal hidden sm:inline">เวลาที่ใช้:</span>
+                    <span id="quiz-stopwatch-text" class="text-purple-300 font-black">00:00</span>
                 </div>
 
-                <!-- Live Score Counter -->
+                <!-- Answered Counter -->
                 <div class="text-right">
-                    <span class="text-[10px] text-gray-400 block uppercase font-bold">คะแนนสะสม</span>
-                    <span id="quiz-score-display" class="text-xl md:text-2xl font-black text-amber-300 font-mono">0</span>
+                    <span class="text-[10px] text-gray-400 block uppercase font-bold">สถานะคำตอบ</span>
+                    <span id="quiz-answered-count-text" class="text-xs sm:text-sm font-black text-emerald-400 font-mono">0/10 ข้อ</span>
                 </div>
             </div>
 
-            <!-- Countdown Timer Bar (Full Width Dynamic) -->
-            <div class="glass-panel rounded-2xl p-3 md:p-4 flex items-center space-x-4">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0">เวลาคงเหลือ:</span>
-                <div class="flex-1 bg-gray-900 h-3 md:h-4 rounded-full overflow-hidden p-0.5 border border-gray-700">
-                    <div id="quiz-timer-bar" class="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-emerald-500 to-teal-400" style="width: 100%"></div>
+            <!-- Question Navigator Pills Grid -->
+            <div class="glass-panel rounded-2xl p-3 sm:p-3.5 space-y-2">
+                <div class="flex items-center justify-between text-xs text-gray-300 px-1">
+                    <span class="font-bold text-purple-300 flex items-center space-x-1">
+                        <span>📋</span>
+                        <span>แถบเลือกข้อสอบ (ข้าม/ย้อนกลับได้):</span>
+                    </span>
+                    <span class="text-[11px] text-gray-400 hidden sm:inline">🟢 ตอบแล้ว / ⚪ ยังไม่ตอบ / 🟡 ข้อปัจจุบัน</span>
                 </div>
-                <span id="quiz-timer-text" class="text-emerald-400 font-black text-2xl md:text-3xl font-mono shrink-0">20s</span>
+                <div id="quiz-navigator-container" class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 pt-1">
+                    <!-- Dynamic Navigator Pills injected by js/app.js -->
+                </div>
             </div>
 
             <!-- Question Card & Visual Image Box -->
@@ -319,20 +326,19 @@
                     <!-- Dynamic Option Buttons injected by js/app.js -->
                 </div>
 
-                <!-- Instant Feedback & Educational Explanation Card -->
-                <div id="quiz-feedback-card" class="hidden p-4 md:p-5 rounded-2xl bg-gray-900/95 border-2 border-purple-500 shadow-2xl space-y-3 animate-subtle-pulse">
-                    <div class="flex items-center justify-between" id="quiz-feedback-title">
-                        <!-- Dynamic Feedback Title -->
+                <!-- Bottom Navigation Bar (Previous & Next/Submit Buttons) -->
+                <div class="pt-4 border-t border-purple-500/20 flex items-center justify-between gap-3">
+                    <button type="button" id="btn-prev-question" class="px-4 sm:px-6 py-3 rounded-xl bg-gray-800/90 hover:bg-gray-700 text-gray-200 hover:text-white font-bold text-xs sm:text-sm border border-gray-700 transition-all flex items-center space-x-2 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 shadow-md">
+                        <span>⮌</span>
+                        <span>ข้อก่อนหน้า</span>
+                    </button>
+                    <div class="text-[11px] sm:text-xs text-purple-300 hidden md:block font-medium text-center">
+                        💡 สามารถเลือกข้อจากแถบด้านบน หรือย้อนกลับมาเปลี่ยนคำตอบได้ตลอดเวลา
                     </div>
-                    <p id="quiz-feedback-desc" class="text-xs md:text-sm text-purple-200 leading-relaxed">
-                        <!-- Dynamic Explanation text -->
-                    </p>
-                    <div class="pt-2 flex justify-end">
-                        <button type="button" id="btn-next-question" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-sm md:text-base shadow-lg shadow-purple-600/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center space-x-2">
-                            <span>ข้อถัดไป (Next)</span>
-                            <span>➔</span>
-                        </button>
-                    </div>
+                    <button type="button" id="btn-next-question" class="px-5 sm:px-7 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-purple-600/40 hover:scale-105 active:scale-95 transition-all flex items-center space-x-2">
+                        <span id="btn-next-text">ข้อถัดไป</span>
+                        <span id="btn-next-icon">➔</span>
+                    </button>
                 </div>
             </div>
         </section>

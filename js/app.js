@@ -11,13 +11,12 @@ class DBTQuizApp {
         this.selectedCategory = 'all'; // 'all', 'shot_size', 'camera_angle'
         this.questionCountLimit = 10; // 5, 10, or 'all'
         
-        // Quiz Session State
+        // Quiz Session State (Self-Paced Navigation)
         this.activeQuestions = [];
         this.currentQuestionIndex = 0;
-        this.timer = null;
-        this.timeLeft = 0;
-        this.maxTime = 20;
-        this.isAnsweringLocked = false;
+        this.userSelections = []; // Store selected option index per question
+        this.stopwatchTimer = null;
+        this.elapsedSeconds = 0;
 
         // Anti-Cheat & Screen Switching State
         this.tabSwitchCount = 0;
@@ -74,18 +73,17 @@ class DBTQuizApp {
             // Quiz elements
             quizProgressText: document.getElementById('quiz-progress-text'),
             quizProgressBar: document.getElementById('quiz-progress-bar'),
-            quizScoreDisplay: document.getElementById('quiz-score-display'),
-            quizComboBadge: document.getElementById('quiz-combo-badge'),
-            quizTimerText: document.getElementById('quiz-timer-text'),
-            quizTimerBar: document.getElementById('quiz-timer-bar'),
+            quizStopwatchText: document.getElementById('quiz-stopwatch-text'),
+            quizAnsweredCountText: document.getElementById('quiz-answered-count-text'),
+            quizNavigatorContainer: document.getElementById('quiz-navigator-container'),
             quizImage: document.getElementById('quiz-image'),
             quizImageSkeleton: document.getElementById('quiz-image-skeleton'),
             quizQuestionTitle: document.getElementById('quiz-question-title'),
             quizOptionsContainer: document.getElementById('quiz-options-container'),
-            quizFeedbackCard: document.getElementById('quiz-feedback-card'),
-            quizFeedbackTitle: document.getElementById('quiz-feedback-title'),
-            quizFeedbackDesc: document.getElementById('quiz-feedback-desc'),
+            btnPrevQuestion: document.getElementById('btn-prev-question'),
             btnNextQuestion: document.getElementById('btn-next-question'),
+            btnNextText: document.getElementById('btn-next-text'),
+            btnNextIcon: document.getElementById('btn-next-icon'),
             btnZoomImage: document.getElementById('btn-zoom-image'),
 
             // Result elements
@@ -199,6 +197,13 @@ class DBTQuizApp {
             });
         }
 
+        // Prev Question button
+        if (this.dom.btnPrevQuestion) {
+            this.dom.btnPrevQuestion.addEventListener('click', () => {
+                this.goToPrevQuestion();
+            });
+        }
+
         // Next Question button
         if (this.dom.btnNextQuestion) {
             this.dom.btnNextQuestion.addEventListener('click', () => {
@@ -261,13 +266,15 @@ class DBTQuizApp {
             });
         }
 
-        // Keyboard Shortcuts for Quiz (1, 2, 3, 4, Space, Enter)
+        // Keyboard Shortcuts for Quiz (1-4 for options, ArrowLeft/ArrowRight/Enter for navigation)
         window.addEventListener('keydown', (e) => {
-            if (this.currentView === 'quiz') {
-                if (['1', '2', '3', '4'].includes(e.key) && !this.isAnsweringLocked) {
+            if (this.currentView === 'quiz' && !this.isWarningModalOpen) {
+                if (['1', '2', '3', '4'].includes(e.key)) {
                     const idx = parseInt(e.key, 10) - 1;
-                    this.handleAnswerSelection(idx);
-                } else if ((e.key === 'Enter' || e.key === ' ') && this.isAnsweringLocked) {
+                    this.handleOptionSelection(idx);
+                } else if (e.key === 'ArrowLeft') {
+                    this.goToPrevQuestion();
+                } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
                     this.goToNextQuestion();
                 }
             }
@@ -422,8 +429,9 @@ class DBTQuizApp {
             this.activeQuestions = shuffled;
         }
 
-        // Reset game stats & anti-cheat counter
+        // Reset game stats & user selections
         this.currentQuestionIndex = 0;
+        this.userSelections = new Array(this.activeQuestions.length).fill(null);
         this.score = 0;
         this.combo = 0;
         this.maxCombo = 0;
@@ -434,8 +442,9 @@ class DBTQuizApp {
         this.userAnswers = [];
         this.sessionStartTime = Date.now();
 
-        // Switch to Quiz View & Render First Question
+        // Switch to Quiz View, start stopwatch & render first question
         this.switchView('quiz');
+        this.startStopwatch();
         this.renderQuestion();
     }
 
@@ -500,6 +509,40 @@ class DBTQuizApp {
         }
     }
 
+    // ==========================================
+    // STOPWATCH & TIME TRACKING
+    // ==========================================
+
+    startStopwatch() {
+        this.stopStopwatch();
+        this.elapsedSeconds = 0;
+        this.updateStopwatchUi();
+        this.stopwatchTimer = setInterval(() => {
+            this.elapsedSeconds++;
+            this.updateStopwatchUi();
+        }, 1000);
+    }
+
+    stopStopwatch() {
+        if (this.stopwatchTimer) {
+            clearInterval(this.stopwatchTimer);
+            this.stopwatchTimer = null;
+        }
+    }
+
+    updateStopwatchUi() {
+        if (!this.dom.quizStopwatchText) return;
+        const mins = Math.floor(this.elapsedSeconds / 60);
+        const secs = this.elapsedSeconds % 60;
+        const mm = String(mins).padStart(2, '0');
+        const ss = String(secs).padStart(2, '0');
+        this.dom.quizStopwatchText.innerText = `${mm}:${ss}`;
+    }
+
+    // ==========================================
+    // SELF-PACED QUESTION RENDERING & NAVIGATION
+    // ==========================================
+
     renderQuestion() {
         if (this.currentQuestionIndex >= this.activeQuestions.length) {
             this.handleFinishQuiz();
@@ -507,30 +550,35 @@ class DBTQuizApp {
         }
 
         const q = this.activeQuestions[this.currentQuestionIndex];
-        this.isAnsweringLocked = false;
 
         // Update Progress UI
         const currentNum = this.currentQuestionIndex + 1;
         const totalNum = this.activeQuestions.length;
-        this.dom.quizProgressText.innerText = `ข้อที่ ${currentNum} / ${totalNum}`;
-        const pct = Math.round((this.currentQuestionIndex / totalNum) * 100);
-        this.dom.quizProgressBar.style.width = `${pct}%`;
-
-        // Update Score & Combo UI
-        this.dom.quizScoreDisplay.innerText = this.score.toLocaleString();
-        if (this.combo > 1) {
-            this.dom.quizComboBadge.classList.remove('hidden');
-            this.dom.quizComboBadge.innerText = `🔥 Combo x${this.combo}`;
-        } else {
-            this.dom.quizComboBadge.classList.add('hidden');
+        if (this.dom.quizProgressText) {
+            this.dom.quizProgressText.innerText = `ข้อที่ ${currentNum} / ${totalNum}`;
         }
+        if (this.dom.quizProgressBar) {
+            const pct = Math.round((currentNum / totalNum) * 100);
+            this.dom.quizProgressBar.style.width = `${pct}%`;
+        }
+
+        // Update Answered Counter
+        const answeredCount = this.userSelections.filter(s => s !== null && s !== undefined).length;
+        if (this.dom.quizAnsweredCountText) {
+            this.dom.quizAnsweredCountText.innerText = `${answeredCount}/${totalNum} ข้อ`;
+        }
+
+        // Render Question Navigator Pills Grid
+        this.renderQuestionNavigator();
 
         // Question Category Badge & Title
         const catBadge = q.category === 'shot_size' ? '📐 ขนาดภาพ (Shot Size)' : '🎬 มุมกล้อง (Camera Angle)';
         const catElem = document.getElementById('quiz-category-badge');
         if (catElem) catElem.innerText = catBadge;
 
-        this.dom.quizQuestionTitle.innerText = q.title;
+        if (this.dom.quizQuestionTitle) {
+            this.dom.quizQuestionTitle.innerText = q.title;
+        }
 
         // Image Handling
         const formattedUrl = teacherController.formatImageUrl(q.imageUrl);
@@ -542,37 +590,44 @@ class DBTQuizApp {
             this.dom.quizImageSkeleton.classList.add('hidden');
         };
         this.dom.quizImage.onerror = () => {
-            // Fallback to placeholder if URL broken
             this.dom.quizImage.src = 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1000&q=80';
             this.dom.quizImage.classList.remove('opacity-0');
             this.dom.quizImageSkeleton.classList.add('hidden');
         };
         this.dom.quizImage.src = formattedUrl;
 
-        // Render Options (Kahoot / Cyber style buttons with Keyboard keys 1-4)
+        // Render Options with Active Selected State
+        const selectedIndex = this.userSelections[this.currentQuestionIndex];
         const optionThemes = [
-            { bg: 'bg-red-900/60 hover:bg-red-800/80 border-red-500/50', keyBg: 'bg-red-600 text-white', icon: '🔺' },
-            { bg: 'bg-blue-900/60 hover:bg-blue-800/80 border-blue-500/50', keyBg: 'bg-blue-600 text-white', icon: '🔷' },
-            { bg: 'bg-amber-900/60 hover:bg-amber-800/80 border-amber-500/50', keyBg: 'bg-amber-600 text-white', icon: '🟡' },
-            { bg: 'bg-emerald-900/60 hover:bg-emerald-800/80 border-emerald-500/50', keyBg: 'bg-emerald-600 text-white', icon: '🟩' }
+            { bg: 'bg-red-900/40 hover:bg-red-800/60 border-red-500/40', keyBg: 'bg-red-600 text-white', icon: '🔺' },
+            { bg: 'bg-blue-900/40 hover:bg-blue-800/60 border-blue-500/40', keyBg: 'bg-blue-600 text-white', icon: '🔷' },
+            { bg: 'bg-amber-900/40 hover:bg-amber-800/60 border-amber-500/40', keyBg: 'bg-amber-600 text-white', icon: '🟡' },
+            { bg: 'bg-emerald-900/40 hover:bg-emerald-800/60 border-emerald-500/40', keyBg: 'bg-emerald-600 text-white', icon: '🟩' }
         ];
 
         let optionsHtml = '';
         q.options.forEach((opt, index) => {
             const theme = optionThemes[index % optionThemes.length];
+            const isSelected = (selectedIndex === index);
+            const selectedClass = isSelected ? 'quiz-option-selected ring-4 ring-purple-400' : '';
+            const checkBadge = isSelected ? '<span class="text-xs font-black bg-purple-600 text-white px-2 py-0.5 rounded-full shadow">✓ เลือกแล้ว</span>' : '';
+
             optionsHtml += `
                 <button type="button" 
                         data-option-index="${index}"
-                        class="quiz-option-btn w-full p-4 md:p-5 rounded-2xl border-2 ${theme.bg} ${theme.border} text-left flex items-center justify-between transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg group">
+                        class="quiz-option-btn ${selectedClass} w-full p-4 md:p-5 rounded-2xl border-2 ${theme.bg} text-left flex items-center justify-between transition-all duration-200 hover:scale-[1.01] active:scale-95 shadow-lg group">
                     <div class="flex items-center space-x-3 md:space-x-4">
-                        <span class="w-8 h-8 md:w-10 md:h-10 rounded-xl ${theme.keyBg} font-black flex items-center justify-center text-sm md:text-base shadow-md group-hover:rotate-6 transition-transform">
+                        <span class="w-8 h-8 md:w-10 md:h-10 rounded-xl ${theme.keyBg} font-black flex items-center justify-center text-sm md:text-base shadow-md group-hover:rotate-6 transition-transform shrink-0">
                             ${index + 1}
                         </span>
                         <span class="text-white font-medium text-sm md:text-lg leading-snug">
                             ${opt}
                         </span>
                     </div>
-                    <span class="text-xl opacity-70">${theme.icon}</span>
+                    <div class="flex items-center space-x-2 shrink-0">
+                        ${checkBadge}
+                        <span class="text-xl opacity-70">${theme.icon}</span>
+                    </div>
                 </button>
             `;
         });
@@ -582,206 +637,138 @@ class DBTQuizApp {
         document.querySelectorAll('.quiz-option-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(e.currentTarget.getAttribute('data-option-index'), 10);
-                this.handleAnswerSelection(idx);
+                this.handleOptionSelection(idx);
             });
         });
 
-        // Hide Feedback card
-        this.dom.quizFeedbackCard.classList.add('hidden');
+        // Update Prev / Next / Submit button state
+        if (this.dom.btnPrevQuestion) {
+            this.dom.btnPrevQuestion.disabled = (this.currentQuestionIndex === 0);
+        }
 
-        // Start Question Timer
-        this.startTimer(q.timeLimit || 20);
-    }
-
-    startTimer(seconds) {
-        clearInterval(this.timer);
-        this.maxTime = seconds;
-        this.timeLeft = seconds;
-        this.updateTimerUi();
-
-        this.timer = setInterval(() => {
-            this.timeLeft--;
-            this.updateTimerUi();
-
-            if (this.timeLeft <= 5 && this.timeLeft > 0) {
-                quizAudio.playUrgentTick();
-            } else if (this.timeLeft > 5) {
-                quizAudio.playTick();
-            }
-
-            if (this.timeLeft <= 0) {
-                clearInterval(this.timer);
-                this.handleTimeout();
-            }
-        }, 1000);
-    }
-
-    updateTimerUi() {
-        this.dom.quizTimerText.innerText = `${this.timeLeft}s`;
-        const percentage = Math.max(0, (this.timeLeft / this.maxTime) * 100);
-        this.dom.quizTimerBar.style.width = `${percentage}%`;
-
-        // Dynamic Timer Color (Green -> Yellow -> Red)
-        if (percentage > 50) {
-            this.dom.quizTimerBar.className = 'h-full transition-all duration-1000 bg-gradient-to-r from-emerald-500 to-teal-400';
-            this.dom.quizTimerText.className = 'text-emerald-400 font-black text-2xl md:text-3xl font-mono';
-        } else if (percentage > 25) {
-            this.dom.quizTimerBar.className = 'h-full transition-all duration-1000 bg-gradient-to-r from-amber-500 to-yellow-400';
-            this.dom.quizTimerText.className = 'text-amber-400 font-black text-2xl md:text-3xl font-mono animate-pulse';
-        } else {
-            this.dom.quizTimerBar.className = 'h-full transition-all duration-1000 bg-gradient-to-r from-red-600 to-rose-500 animate-pulse';
-            this.dom.quizTimerText.className = 'text-rose-500 font-black text-2xl md:text-3xl font-mono animate-bounce';
+        const isLastQuestion = (this.currentQuestionIndex === totalNum - 1);
+        if (this.dom.btnNextText) {
+            this.dom.btnNextText.innerText = isLastQuestion ? '🚀 ส่งคำตอบ (Submit)' : 'ข้อถัดไป';
+        }
+        if (this.dom.btnNextIcon) {
+            this.dom.btnNextIcon.innerText = isLastQuestion ? '✓' : '➔';
         }
     }
 
-    handleAnswerSelection(selectedIndex) {
-        if (this.isAnsweringLocked) return;
-        this.isAnsweringLocked = true;
-        clearInterval(this.timer);
-
-        const q = this.activeQuestions[this.currentQuestionIndex];
-        const isCorrect = (selectedIndex === q.correctIndex);
-        const timeUsed = this.maxTime - this.timeLeft;
-
-        // Calculate score with Speed Bonus and Combo multiplier
-        let pointsEarned = 0;
-        if (isCorrect) {
-            this.combo++;
-            if (this.combo > this.maxCombo) this.maxCombo = this.combo;
-            this.correctCount++;
-
-            const basePoints = 100;
-            const speedBonus = Math.round((this.timeLeft / this.maxTime) * 50); // up to +50 bonus
-            const comboBonus = (this.combo - 1) * 20; // +20 per combo level
-            pointsEarned = basePoints + speedBonus + comboBonus;
-            this.score += pointsEarned;
-
-            quizAudio.playCorrect();
-        } else {
-            this.combo = 0;
-            quizAudio.playWrong();
-        }
-
-        // Record for student review and teacher analytics
-        this.userAnswers.push({
-            questionId: q.id,
-            category: q.category,
-            title: q.title,
-            imageUrl: q.imageUrl,
-            options: q.options,
-            selectedIndex: selectedIndex,
-            selectedOption: q.options[selectedIndex],
-            correctIndex: q.correctIndex,
-            correctOption: q.options[q.correctIndex],
-            isCorrect: isCorrect,
-            timeUsed: timeUsed,
-            pointsEarned: pointsEarned,
-            explanation: q.explanation
-        });
-
-        // Update Option UI Styles (Green for correct, Red for chosen wrong)
-        const optionButtons = document.querySelectorAll('.quiz-option-btn');
-        optionButtons.forEach((btn, idx) => {
-            btn.disabled = true;
-            btn.classList.remove('hover:scale-[1.02]', 'hover:bg-red-800/80', 'hover:bg-blue-800/80', 'hover:bg-amber-800/80', 'hover:bg-emerald-800/80');
-
-            if (idx === q.correctIndex) {
-                btn.className = 'quiz-option-btn w-full p-4 md:p-5 rounded-2xl border-4 border-emerald-400 bg-emerald-900/90 text-left flex items-center justify-between shadow-2xl scale-[1.03] ring-4 ring-emerald-500/50 transition-all';
-            } else if (idx === selectedIndex && !isCorrect) {
-                btn.className = 'quiz-option-btn w-full p-4 md:p-5 rounded-2xl border-4 border-rose-500 bg-rose-950/90 text-left flex items-center justify-between shadow-xl opacity-80 line-through';
-            } else {
-                btn.classList.add('opacity-30');
+    renderQuestionNavigator() {
+        if (!this.dom.quizNavigatorContainer) return;
+        let html = '';
+        this.activeQuestions.forEach((_, idx) => {
+            const isCurrent = (idx === this.currentQuestionIndex);
+            const isAnswered = (this.userSelections[idx] !== null && this.userSelections[idx] !== undefined);
+            
+            let statusClass = isAnswered ? 'nav-pill-answered' : 'nav-pill-unanswered';
+            if (isCurrent) {
+                statusClass += ' nav-pill-current bg-purple-900/80';
             }
-        });
 
-        // Reveal Feedback Card
-        this.showFeedbackCard(isCorrect, pointsEarned, q.explanation);
+            const checkMark = isAnswered ? '<span class="text-[10px] ml-0.5 font-bold">✓</span>' : '';
+
+            html += `
+                <button type="button" 
+                        data-jump-index="${idx}" 
+                        class="nav-pill-btn ${statusClass} cursor-pointer"
+                        title="ข้อที่ ${idx + 1} ${isAnswered ? '(ตอบแล้ว)' : '(ยังไม่ได้ตอบ)'}">
+                    <span>${idx + 1}</span>
+                    ${checkMark}
+                </button>
+            `;
+        });
+        this.dom.quizNavigatorContainer.innerHTML = html;
+
+        // Bind jump clicks
+        this.dom.quizNavigatorContainer.querySelectorAll('[data-jump-index]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const jumpIdx = parseInt(e.currentTarget.getAttribute('data-jump-index'), 10);
+                this.jumpToQuestion(jumpIdx);
+            });
+        });
     }
 
-    handleTimeout() {
-        if (this.isAnsweringLocked) return;
-        this.isAnsweringLocked = true;
-
-        const q = this.activeQuestions[this.currentQuestionIndex];
-        this.combo = 0;
-        quizAudio.playTimeout();
-
-        // Record timeout answer
-        this.userAnswers.push({
-            questionId: q.id,
-            category: q.category,
-            title: q.title,
-            imageUrl: q.imageUrl,
-            options: q.options,
-            selectedIndex: -1,
-            selectedOption: 'หมดเวลา (ไม่ได้ตอบ)',
-            correctIndex: q.correctIndex,
-            correctOption: q.options[q.correctIndex],
-            isCorrect: false,
-            timeUsed: this.maxTime,
-            pointsEarned: 0,
-            explanation: q.explanation
-        });
-
-        // Highlight correct option
-        const optionButtons = document.querySelectorAll('.quiz-option-btn');
-        optionButtons.forEach((btn, idx) => {
-            btn.disabled = true;
-            if (idx === q.correctIndex) {
-                btn.className = 'quiz-option-btn w-full p-4 md:p-5 rounded-2xl border-4 border-emerald-400 bg-emerald-900/90 text-left flex items-center justify-between shadow-2xl scale-[1.03] ring-4 ring-emerald-500/50';
-            } else {
-                btn.classList.add('opacity-30');
-            }
-        });
-
-        this.showFeedbackCard(false, 0, q.explanation, true);
-    }
-
-    showFeedbackCard(isCorrect, points, explanation, isTimeout = false) {
-        this.dom.quizFeedbackCard.classList.remove('hidden');
-
-        if (isCorrect) {
-            this.dom.quizFeedbackTitle.innerHTML = `
-                <span class="text-emerald-400 flex items-center space-x-2 font-black text-xl md:text-2xl">
-                    <span>🎉 ยอดเยี่ยม ถูกต้อง!</span>
-                    <span class="text-amber-300 text-base font-bold bg-amber-950/80 px-3 py-1 rounded-full border border-amber-500/40">+${points} คะแนน</span>
-                </span>
-            `;
-        } else if (isTimeout) {
-            this.dom.quizFeedbackTitle.innerHTML = `
-                <span class="text-rose-400 flex items-center space-x-2 font-black text-xl md:text-2xl">
-                    <span>⏰ หมดเวลา!</span>
-                    <span class="text-gray-400 text-sm font-normal">ตอบไม่ทันเวลา</span>
-                </span>
-            `;
-        } else {
-            this.dom.quizFeedbackTitle.innerHTML = `
-                <span class="text-rose-400 flex items-center space-x-2 font-black text-xl md:text-2xl">
-                    <span>❌ ตอบยังไม่ถูกต้อง</span>
-                    <span class="text-gray-400 text-sm font-normal">+0 คะแนน</span>
-                </span>
-            `;
-        }
-
-        this.dom.quizFeedbackDesc.innerText = explanation || 'ศึกษาและจดจำมุมกล้อง/ขนาดภาพในข้อนี้ไว้เพื่อใช้ในการสอบและสร้างสรรค์ผลงานสื่อจริง';
-    }
-
-    goToNextQuestion() {
-        this.currentQuestionIndex++;
+    handleOptionSelection(selectedIndex) {
+        this.userSelections[this.currentQuestionIndex] = selectedIndex;
+        quizAudio.playTick();
         this.renderQuestion();
     }
 
+    goToPrevQuestion() {
+        if (this.currentQuestionIndex > 0) {
+            this.currentQuestionIndex--;
+            this.renderQuestion();
+        }
+    }
+
+    goToNextQuestion() {
+        if (this.currentQuestionIndex < this.activeQuestions.length - 1) {
+            this.currentQuestionIndex++;
+            this.renderQuestion();
+        } else {
+            // Last question: check unanswered and confirm submit
+            const unanswered = this.userSelections.filter(s => s === null || s === undefined).length;
+            if (unanswered > 0) {
+                const ok = confirm(`คุณยังไม่ได้ตอบอีก ${unanswered} ข้อ\nต้องการส่งคำตอบและดูผลคะแนนทันทีหรือไม่?`);
+                if (!ok) return;
+            }
+            this.handleFinishQuiz();
+        }
+    }
+
+    jumpToQuestion(idx) {
+        if (idx >= 0 && idx < this.activeQuestions.length) {
+            this.currentQuestionIndex = idx;
+            this.renderQuestion();
+        }
+    }
+
     // ==========================================
-    // RESULT SUMMARY
+    // RESULT SUMMARY (BATCH EVALUATION)
     // ==========================================
 
     handleFinishQuiz() {
-        clearInterval(this.timer);
+        this.stopStopwatch();
+
+        // Calculate score and evaluate user selections
+        this.score = 0;
+        this.correctCount = 0;
+        this.userAnswers = [];
+
+        this.activeQuestions.forEach((q, idx) => {
+            const selectedIndex = this.userSelections[idx];
+            const isAnswered = (selectedIndex !== null && selectedIndex !== undefined);
+            const isCorrect = isAnswered && (selectedIndex === q.correctIndex);
+            const pointsEarned = isCorrect ? 100 : 0;
+
+            if (isCorrect) {
+                this.correctCount++;
+                this.score += pointsEarned;
+            }
+
+            this.userAnswers.push({
+                questionId: q.id,
+                category: q.category,
+                title: q.title,
+                imageUrl: q.imageUrl,
+                options: q.options,
+                selectedIndex: isAnswered ? selectedIndex : -1,
+                selectedOption: isAnswered ? q.options[selectedIndex] : 'ไม่ได้เลือกคำตอบ',
+                correctIndex: q.correctIndex,
+                correctOption: q.options[q.correctIndex],
+                isCorrect: isCorrect,
+                timeUsed: 0,
+                pointsEarned: pointsEarned,
+                explanation: q.explanation
+            });
+        });
 
         const totalQuestions = this.activeQuestions.length;
-        const percentage = Math.round((this.correctCount / totalQuestions) * 100);
-        const totalTimeUsed = Math.round((Date.now() - this.sessionStartTime) / 1000);
-        const maxPossibleScore = totalQuestions * 170; // 100 base + 50 speed + 20 combo
+        const percentage = totalQuestions > 0 ? Math.round((this.correctCount / totalQuestions) * 100) : 0;
+        const totalTimeUsed = this.elapsedSeconds || Math.round((Date.now() - this.sessionStartTime) / 1000);
+        const maxPossibleScore = totalQuestions * 100;
 
         // Rank Badge Calculation
         let grade = 'C';
@@ -832,13 +819,18 @@ class DBTQuizApp {
         // Save to Teacher Results Database
         quizData.saveResult(resultRecord);
 
+        // Format Elapsed Time Display
+        const mins = Math.floor(totalTimeUsed / 60);
+        const secs = totalTimeUsed % 60;
+        const timeText = mins > 0 ? `${mins} นาที ${secs} วินาที` : `${secs} วินาที`;
+
         // Render Results UI
         this.dom.resultScore.innerText = this.score.toLocaleString();
         this.dom.resultPercentage.innerText = `${percentage}%`;
         this.dom.resultRankBadge.innerText = grade;
         this.dom.resultRankBadge.className = `w-16 h-16 md:w-20 md:h-20 rounded-2xl border-4 flex items-center justify-center font-black text-3xl md:text-4xl shadow-xl ${rankBadgeClass}`;
         this.dom.resultRankTitle.innerText = rankTitle;
-        this.dom.resultTimeUsed.innerText = `${totalTimeUsed} วินาที`;
+        this.dom.resultTimeUsed.innerText = timeText;
         this.dom.resultCorrectSummary.innerText = `${this.correctCount} / ${totalQuestions} ข้อ`;
         this.dom.resultStudentInfo.innerText = `${this.selectedStudent.id} - ${this.selectedStudent.name} (กลุ่ม: ${this.selectedStudent.group || '-'})`;
 
@@ -861,7 +853,7 @@ class DBTQuizApp {
             const isOk = ans.isCorrect;
             const badge = isOk 
                 ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-950 border border-emerald-500 text-emerald-400">✓ ถูกต้อง (+'+ans.pointsEarned+')</span>'
-                : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-950 border border-rose-500 text-rose-400">✗ ตอบผิด</span>';
+                : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-950 border border-rose-500 text-rose-400">✗ ตอบผิด / ไม่ได้ตอบ</span>';
 
             const formattedImg = teacherController.formatImageUrl(ans.imageUrl);
 
